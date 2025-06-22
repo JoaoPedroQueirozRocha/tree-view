@@ -18,7 +18,8 @@
 			</div>
 			<div class="help-text">
 				<span v-if="!isLinkMode">
-					💡 Toque em um nó para selecioná-lo • Toque no texto para editar • Toque no ❌ para deletar
+					💡 Toque rápido no centro do nó para editar texto • Toque longo para mover • Toque no ❌ para
+					deletar
 				</span>
 				<span v-else> 💡 Use os pontos coloridos para conectar nós • Verde = esquerda, Azul = direita </span>
 			</div>

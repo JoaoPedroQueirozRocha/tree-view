@@ -55,6 +55,16 @@
 						class="node-circle"
 					/>
 
+					<!-- Área de toque para o texto (invisível, maior) -->
+					<circle
+						:r="nodeRadius * 0.8"
+						fill="transparent"
+						class="text-touch-area"
+						@touchstart="handleNodeTextTouchStart($event, node)"
+						@touchend="handleNodeTextTouchEnd($event, node)"
+						v-if="!props.isLinkMode"
+					/>
+
 					<!-- Valor do nó -->
 					<text
 						:x="0"
@@ -62,6 +72,8 @@
 						text-anchor="middle"
 						class="node-text"
 						@click="handleNodeTextClick(node)"
+						@touchstart="handleNodeTextTouchStart($event, node)"
+						@touchend="handleNodeTextTouchEnd($event, node)"
 						:style="{ cursor: props.isLinkMode ? 'default' : 'text' }"
 						:class="{ editable: !props.isLinkMode }"
 					>
@@ -204,6 +216,13 @@ const dragState = reactive({
 	startY: 0,
 	offsetX: 0,
 	offsetY: 0,
+});
+
+// Estado para controle de toque
+const touchState = reactive({
+	startTime: 0,
+	isLongPress: false,
+	touchStarted: false,
 });
 
 const connectingState = reactive({
@@ -418,6 +437,11 @@ const handleNodeTouchStart = (event, node) => {
 
 	if (props.isLinkMode) return;
 
+	// Se o toque foi no texto, não inicia o drag
+	if (event.target.tagName === 'text') {
+		return;
+	}
+
 	selectedNode.value = node.id;
 
 	const pos = getTouchPosition(event);
@@ -427,10 +451,41 @@ const handleNodeTouchStart = (event, node) => {
 	dragState.startY = pos.y;
 	dragState.offsetX = pos.x - node.x;
 	dragState.offsetY = pos.y - node.y;
+
+	touchState.isLongPress = true;
 };
 
 const handleNodeTextClick = (node) => {
 	if (!props.isLinkMode) {
+		startEditing(node);
+	}
+};
+
+const handleNodeTextTouchStart = (event, node) => {
+	event.preventDefault();
+	event.stopPropagation();
+
+	if (props.isLinkMode) return;
+
+	touchState.startTime = Date.now();
+	touchState.touchStarted = true;
+	touchState.isLongPress = false;
+
+	selectedNode.value = node.id;
+};
+
+const handleNodeTextTouchEnd = (event, node) => {
+	event.preventDefault();
+	event.stopPropagation();
+
+	if (props.isLinkMode) return;
+	if (!touchState.touchStarted) return;
+
+	const touchDuration = Date.now() - touchState.startTime;
+	touchState.touchStarted = false;
+
+	// Se foi um toque rápido (menos de 300ms), inicia edição
+	if (touchDuration < 300 && !touchState.isLongPress) {
 		startEditing(node);
 	}
 };
@@ -693,6 +748,17 @@ onUnmounted(() => {
 		color: #1a1a1a !important;
 	}
 
+	.text-touch-area {
+		cursor: pointer;
+	}
+
+	.node.selected .text-touch-area {
+		fill: rgba(33, 150, 243, 0.1);
+		stroke: #2196f3;
+		stroke-width: 2;
+		stroke-dasharray: 3, 3;
+	}
+
 	.connection-point {
 		r: 12;
 	}
@@ -739,5 +805,10 @@ onUnmounted(() => {
 		transform: none;
 		filter: none;
 	}
+}
+
+.text-touch-area {
+	cursor: text;
+	pointer-events: auto;
 }
 </style>
