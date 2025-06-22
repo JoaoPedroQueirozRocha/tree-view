@@ -18,7 +18,7 @@
 			</div>
 			<div class="help-text">
 				<span v-if="!isLinkMode">
-					💡 Clique no texto de um nó para editá-lo • Duplo clique no canvas para adicionar nó
+					💡 Toque em um nó para selecioná-lo • Toque no texto para editar • Toque no ❌ para deletar
 				</span>
 				<span v-else> 💡 Use os pontos coloridos para conectar nós • Verde = esquerda, Azul = direita </span>
 			</div>

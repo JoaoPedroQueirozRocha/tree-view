@@ -92,6 +92,18 @@
 
 					<!-- Botão de deletar -->
 					<g v-if="selectedNode === node.id && !isLinkMode" class="delete-button">
+						<!-- Área de toque invisível maior -->
+						<circle
+							:cx="nodeRadius * 0.8"
+							:cy="-nodeRadius * 0.8"
+							r="20"
+							fill="transparent"
+							class="delete-touch-area"
+							@click="handleDeleteClick($event, node)"
+							@touchstart="handleDeleteTouchStart($event, node)"
+							@touchend="handleDeleteTouchEnd($event, node)"
+						/>
+						<!-- Círculo visível -->
 						<circle
 							:cx="nodeRadius * 0.8"
 							:cy="-nodeRadius * 0.8"
@@ -99,6 +111,8 @@
 							fill="#f44336"
 							class="delete-circle"
 							@click="handleDeleteClick($event, node)"
+							@touchstart="handleDeleteTouchStart($event, node)"
+							@touchend="handleDeleteTouchEnd($event, node)"
 						/>
 						<text
 							:x="nodeRadius * 0.8"
@@ -109,6 +123,8 @@
 							font-weight="bold"
 							class="delete-text"
 							@click="handleDeleteClick($event, node)"
+							@touchstart="handleDeleteTouchStart($event, node)"
+							@touchend="handleDeleteTouchEnd($event, node)"
 						>
 							×
 						</text>
@@ -439,6 +455,18 @@ const handleDeleteClick = (event, node) => {
 	selectedNode.value = null;
 };
 
+const handleDeleteTouchStart = (event, node) => {
+	event.preventDefault();
+	event.stopPropagation();
+};
+
+const handleDeleteTouchEnd = (event, node) => {
+	event.preventDefault();
+	event.stopPropagation();
+	emit('delete-node', node.id);
+	selectedNode.value = null;
+};
+
 const handleConnectionClick = (connection) => {
 	if (props.isLinkMode) {
 		emit('disconnect-nodes', connection.parent, connection.child);
@@ -593,6 +621,22 @@ onUnmounted(() => {
 
 .delete-button {
 	cursor: pointer;
+	animation: fadeInScale 0.3s ease-out;
+}
+
+@keyframes fadeInScale {
+	0% {
+		opacity: 0;
+		transform: scale(0.5);
+	}
+	100% {
+		opacity: 1;
+		transform: scale(1);
+	}
+}
+
+.delete-touch-area {
+	cursor: pointer;
 }
 
 .delete-circle {
@@ -654,11 +698,11 @@ onUnmounted(() => {
 	}
 
 	.delete-circle {
-		r: 16;
+		r: 18;
 	}
 
 	.delete-text {
-		font-size: 18px;
+		font-size: 20px;
 		fill: white !important;
 		color: white !important;
 	}
@@ -668,6 +712,10 @@ onUnmounted(() => {
 		height: 40px;
 		font-size: 18px;
 		border-width: 4px;
+	}
+
+	.delete-button {
+		cursor: pointer;
 	}
 }
 
